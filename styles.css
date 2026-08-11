@@ -1,3 +1,13 @@
+/* ===== 工具类 ===== */
+
+.sr-hidden.sr-hidden {
+	display: none;
+}
+
+.sr-scroll-locked.sr-scroll-locked {
+	overflow: hidden;
+}
+
 /* 符号剔除器 - 样式文件 */
 
 .preset-details {
@@ -75,6 +85,8 @@
 	-webkit-backdrop-filter: blur(6px);
 	background-clip: padding-box;
 	animation: sr-toolbar-fadein 0.15s ease-out;
+	left: var(--sr-left, 0);
+	top: var(--sr-top, 0);
 }
 
 .symbol-stripper-btn {
@@ -142,10 +154,10 @@
 	color: var(--text-accent);
 }
 
-.sr-guide-subtitle {
+.sr-guide p.sr-guide-subtitle {
 	font-weight: 600;
-	color: var(--text-normal) !important;
-	margin-top: 12px !important;
+	color: var(--text-normal);
+	margin-top: 12px;
 }
 
 .sr-regex-table {
@@ -246,6 +258,8 @@
 	-webkit-backdrop-filter: blur(6px);
 	background-clip: padding-box;
 	animation: sr-toolbar-fadein 0.12s ease-out;
+	left: var(--sr-left, 0);
+	top: var(--sr-top, 0);
 }
 
 .sr-more-item {

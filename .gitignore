@@ -10,6 +10,7 @@ release/
 # IDE
 .vscode/
 .idea/
+.joycode/
 
 # 系统文件
 Thumbs.db

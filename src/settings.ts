@@ -26,7 +26,7 @@ export const DEFAULT_PRESETS: RemovePreset[] = [
 	{ name: '剔除数字/Strip Digits', mode: 'char', items: ['0123456789'] },
 	{ name: '剔除空白/Strip Whitespace', mode: 'regex', items: ['\\s+'] },
 	{ name: '剔除中文标点/Strip Cn Punctuation', mode: 'regex', items: ["[，。！？、；：\u201c\u201d\u2018\u2019【】（）《》…—]"] },
-	{ name: '剔除英文标点/Strip En Punctuation', mode: 'char', items: ['.,!?;:\'\"()[]{}<>'] },
+	{ name: '剔除英文标点/Strip En Punctuation', mode: 'char', items: ['.,!?;:\'"()[]{}<>'] },
 ];
 
 /** 跟随栏位置选项（3×3九宫格顺序：左上→右上，左→右，左下→右下，不含中心占位） */
@@ -243,12 +243,12 @@ export class SymbolStripperSettingTab extends PluginSettingTab {
 						activeBtn = btn;
 					}
 
-					btn.addEventListener('click', async () => {
+					btn.addEventListener('click', () => {
 						if (activeBtn) activeBtn.removeClass('sr-position-active');
 						btn.addClass('sr-position-active');
 						activeBtn = btn;
 						this.plugin.settings.followingToolbarPosition = pos.value;
-						await this.plugin.saveSettings();
+						void this.plugin.saveSettings();
 					});
 				}
 			});
@@ -283,7 +283,8 @@ export class SymbolStripperSettingTab extends PluginSettingTab {
 	}
 
 	/** 预设管理 */
-	private displayPresets(container: HTMLElement): void {
+	displayPresets(container: HTMLElement, refresh?: () => void): void {
+		const doRefresh = refresh ?? (() => this.display());
 		// === 使用说明 ===
 		container.createEl('h3', { text: t('presets.guide') });
 
@@ -292,9 +293,17 @@ export class SymbolStripperSettingTab extends PluginSettingTab {
 		guide.createEl('p', { text: t('presets.guide.intro') });
 		const formatList = guide.createEl('ul');
 		formatList.createEl('li', { text: t('presets.guide.name') });
-		formatList.createEl('li').innerHTML = t('presets.guide.charMode');
-		formatList.createEl('li').innerHTML = t('presets.guide.regexMode');
-		formatList.createEl('li').innerHTML = t('presets.guide.separator');
+		const charModeLi = formatList.createEl('li');
+		charModeLi.createEl('strong', { text: t('presets.guide.charMode.label') });
+		charModeLi.appendText(t('presets.guide.charMode.desc'));
+		charModeLi.createEl('code', { text: t('presets.guide.charMode.code') });
+		charModeLi.appendText(t('presets.guide.charMode.suffix'));
+		const regexModeLi = formatList.createEl('li');
+		regexModeLi.createEl('strong', { text: t('presets.guide.regexMode.label') });
+		regexModeLi.appendText(t('presets.guide.regexMode.desc'));
+		regexModeLi.createEl('code', { text: t('presets.guide.regexMode.code') });
+		regexModeLi.appendText(t('presets.guide.regexMode.suffix'));
+		formatList.createEl('li', { text: t('presets.guide.separator') });
 
 		guide.createEl('p', { text: t('presets.guide.regexSyntax'), cls: 'sr-guide-subtitle' });
 		const regexTable = guide.createEl('table', { cls: 'sr-regex-table' });
@@ -323,9 +332,11 @@ export class SymbolStripperSettingTab extends PluginSettingTab {
 		];
 		for (const [syntax, desc, example] of regexItems) {
 			const row = tbody.createEl('tr');
-			row.createEl('td').innerHTML = `<code>${syntax}</code>`;
+			const syntaxTd = row.createEl('td');
+			syntaxTd.createEl('code', { text: syntax });
 			row.createEl('td', { text: desc });
-			row.createEl('td').innerHTML = `<code>${example}</code>`;
+			const exampleTd = row.createEl('td');
+			exampleTd.createEl('code', { text: example });
 		}
 
 		// === 剔除预设 ===
@@ -340,7 +351,7 @@ export class SymbolStripperSettingTab extends PluginSettingTab {
 				.setValue(this.presetFilterMode)
 				.onChange((value: string) => {
 					this.presetFilterMode = value as 'name' | 'content';
-					this.display();
+					doRefresh();
 				})
 			)
 			.addText(text => text
@@ -349,7 +360,7 @@ export class SymbolStripperSettingTab extends PluginSettingTab {
 				.onChange((value) => {
 					if (this.isComposing) return;
 					this.presetFilter = value;
-					this.display();
+					doRefresh();
 				})
 			);
 
@@ -360,7 +371,7 @@ export class SymbolStripperSettingTab extends PluginSettingTab {
 			input.addEventListener('compositionend', () => {
 				this.isComposing = false;
 				this.presetFilter = input.value;
-				this.display();
+				doRefresh();
 			});
 		}
 
@@ -397,7 +408,7 @@ export class SymbolStripperSettingTab extends PluginSettingTab {
 				e.stopPropagation();
 				this.plugin.settings.presets.splice(i, 1);
 				await this.plugin.saveSettings();
-				this.display();
+				doRefresh();
 			});
 
 			const body = details.createEl('div', { cls: 'preset-body' });
@@ -453,14 +464,14 @@ export class SymbolStripperSettingTab extends PluginSettingTab {
 					});
 					await this.plugin.saveSettings();
 					this.openPresetIndex = this.plugin.settings.presets.length - 1;
-					this.activeTab = 'presets';
-					this.display();
+					doRefresh();
 				})
 			);
 	}
 
 	/** 导入/导出 */
-	private displayImportExport(container: HTMLElement): void {
+	displayImportExport(container: HTMLElement, refresh?: () => void): void {
+		const doRefresh = refresh ?? (() => this.display());
 		new Setting(container)
 			.setName(t('importExport.export'))
 			.setDesc(t('importExport.export.desc'))
@@ -503,7 +514,7 @@ export class SymbolStripperSettingTab extends PluginSettingTab {
 							}
 							this.plugin.settings.presets = presets;
 							await this.plugin.saveSettings();
-							this.display();
+							doRefresh();
 							new Notice(t('notice.importSuccess'));
 						} catch (e: any) {
 							new Notice(t('notice.importFailed', e.message ?? String(e)), 5000);

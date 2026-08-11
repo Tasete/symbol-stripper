@@ -1,6 +1,6 @@
 {
 	"name": "symbol-stripper",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "Obsidian plugin: remove specified characters or regex matches from selected text",
 	"main": "main.js",
 	"scripts": {
@@ -12,8 +12,10 @@
 	"license": "MIT",
 	"devDependencies": {
 		"@types/node": "^16.11.6",
-		"builtin-modules": "^3.3.0",
+		"@typescript-eslint/eslint-plugin": "^8.67.0",
+		"@typescript-eslint/parser": "^8.67.0",
 		"esbuild": "0.17.3",
+		"eslint": "^9.39.5",
 		"obsidian": "latest",
 		"tslib": "2.4.0",
 		"typescript": "4.7.4"

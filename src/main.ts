@@ -4,7 +4,7 @@
  * 功能：选中文本后，通过浮动工具栏、右键菜单或命令面板一键剔除指定字符/正则匹配
  */
 
-import { Notice, Plugin, MarkdownView, setIcon } from 'obsidian';
+import { Editor, MarkdownView, Menu, MenuItem, Notice, Plugin, setIcon } from 'obsidian';
 import { removeChars, removeRegex } from './remover';
 import { initLang, t, type LangOption } from './i18n';
 import {
@@ -28,12 +28,25 @@ interface CursorCoords {
 	bottom: number;
 }
 
+/** CodeMirror 6 EditorView 内部 API 类型声明（仅声明本插件使用的属性） */
+interface CMEditorView {
+	coordsAtPos(pos: number, side?: number): { left: number; right: number; top: number; bottom: number } | null;
+	readonly state: { doc: { line(n: number): { from: number } } };
+}
+
+/** 旧版 cursorCoords 返回值类型声明 */
+interface LegacyCursorCoords {
+	left?: number;
+	right?: number;
+	top?: number;
+	bottom?: number;
+}
+
 /** 获取光标在视口中的坐标（支持 CM6 和旧版 API） */
-function getCursorCoords(editor: any, view: MarkdownView): CursorCoords | null {
+function getCursorCoords(editor: Editor, view: MarkdownView): CursorCoords | null {
 	// 方法1：CodeMirror 6 API（coordsAtPos 返回视口坐标，无需减侧边栏偏移）
 	try {
-		// @ts-ignore - CodeMirror 6 内部 API
-		const cm = view.editor?.cm;
+		const cm = (view.editor as unknown as { cm?: CMEditorView }).cm;
 		if (cm && cm.coordsAtPos) {
 			const head = editor.getCursor('head');
 			const line = cm.state.doc.line(head.line + 1);
@@ -54,7 +67,7 @@ function getCursorCoords(editor: any, view: MarkdownView): CursorCoords | null {
 
 	// 方法2：旧版 editor.cursorCoords API
 	try {
-		const result = editor.cursorCoords?.('head', 'window');
+		const result = (editor as unknown as { cursorCoords?: (pos: string, context: string) => LegacyCursorCoords | null }).cursorCoords?.('head', 'window');
 		if (result) {
 			return {
 				left: result.left ?? 0,
@@ -99,10 +112,10 @@ function clampToViewport(el: HTMLElement, gap: number): void {
 	const vw = window.innerWidth;
 	const vh = window.innerHeight;
 
-	if (rect.left < 0) el.style.left = `${gap}px`;
-	if (rect.right > vw) el.style.left = `${vw - rect.width - gap}px`;
-	if (rect.top < 0) el.style.top = `${gap}px`;
-	if (rect.bottom > vh) el.style.top = `${vh - rect.height - gap}px`;
+	if (rect.left < 0) el.style.setProperty('--sr-left', `${gap}px`);
+	if (rect.right > vw) el.style.setProperty('--sr-left', `${vw - rect.width - gap}px`);
+	if (rect.top < 0) el.style.setProperty('--sr-top', `${gap}px`);
+	if (rect.bottom > vh) el.style.setProperty('--sr-top', `${vh - rect.height - gap}px`);
 }
 
 export default class SymbolStripperPlugin extends Plugin {
@@ -112,7 +125,7 @@ export default class SymbolStripperPlugin extends Plugin {
 	private isEraserBrushActive: boolean = false;
 	private eraserBrushIndicator: HTMLElement | null = null;
 	private lastSelection: string = '';
-	private currentEditor: any = null;
+	private currentEditor: Editor | null = null;
 
 	async onload() {
 		await this.loadSettings();
@@ -130,15 +143,13 @@ export default class SymbolStripperPlugin extends Plugin {
 		// 设置页面
 		this.addSettingTab(new SymbolStripperSettingTab(this.app, this));
 
-		console.log(t('plugin.name') + ' loaded');
-	}
+		}
 
 	onunload() {
 		this.removeFloatingToolbar();
 		this.hideMoreDropdown();
 		this.deactivateEraserBrush();
-		console.log(t('plugin.name') + ' unloaded');
-	}
+		}
 
 	/** 注册右键菜单 */
 	private registerContextMenu(): void {
@@ -149,11 +160,12 @@ export default class SymbolStripperPlugin extends Plugin {
 
 				// 剔除预设子菜单
 				if (this.settings.useModes.contextMenuPresets) {
-					menu.addItem((item: any) => {
+					menu.addItem((item: MenuItem) => {
 						item.setTitle(t('contextMenu.strip'));
-						const submenu = item.setSubmenu();
+						const submenu = (item as unknown as { setSubmenu(): Menu }).setSubmenu();
+						
 						for (const preset of this.settings.presets) {
-							submenu.addItem((subItem: any) => {
+							submenu.addItem((subItem: MenuItem) => {
 								subItem
 									.setTitle(preset.name)
 									.onClick(() => {
@@ -166,7 +178,7 @@ export default class SymbolStripperPlugin extends Plugin {
 
 				// 剔除刷开关项
 				if (this.settings.useModes.contextMenuEraserBrush) {
-					menu.addItem((item: any) => {
+					menu.addItem((item: MenuItem) => {
 						item
 							.setTitle(this.isEraserBrushActive ? t('contextMenu.disableEraserBrush') : t('contextMenu.enableEraserBrush'))
 							.onClick(() => {
@@ -207,7 +219,7 @@ export default class SymbolStripperPlugin extends Plugin {
 		this.registerDomEvent(document, 'mouseup', (evt: MouseEvent) => {
 			if (this.isClickOnUI(evt)) return;
 			// 延迟一帧，确保选区已更新
-			setTimeout(() => this.handleSelectionChange(), 50);
+			window.setTimeout(() => this.handleSelectionChange(), 50);
 		});
 
 		// 点击工具栏外部时隐藏
@@ -221,7 +233,7 @@ export default class SymbolStripperPlugin extends Plugin {
 		this.registerDomEvent(document, 'keyup', (evt: KeyboardEvent) => {
 			if (evt.key.startsWith('Arrow') || evt.key === 'Home' || evt.key === 'End' ||
 				evt.key === 'PageUp' || evt.key === 'PageDown' || evt.key === 'Shift') {
-				setTimeout(() => this.handleSelectionChange(), 50);
+				window.setTimeout(() => this.handleSelectionChange(), 50);
 			}
 		});
 
@@ -376,7 +388,7 @@ export default class SymbolStripperPlugin extends Plugin {
 	}
 
 	/** 显示浮动工具栏（单例模式：只更新位置和可见性） */
-	private showFloatingToolbar(editor: any, view: MarkdownView): void {
+	private showFloatingToolbar(editor: Editor, view: MarkdownView): void {
 		this.hideMoreDropdown();
 		this.currentEditor = editor;
 
@@ -389,28 +401,26 @@ export default class SymbolStripperPlugin extends Plugin {
 		this.updateCommonBtnTooltip();
 		this.updateMoreButton(toolbar);
 
-		// 定位
+			// 定位
 		const direction = this.settings.followingToolbarPosition;
 		const gap = 8;
 		const estW = TOOLBAR_EST_W, estH = TOOLBAR_EST_H;
 		const pos = calcToolbarPosition(direction, coords, estW, estH, gap);
 
-		toolbar.style.position = 'fixed';
-		toolbar.style.left = `${pos.left}px`;
-		toolbar.style.top = `${pos.top}px`;
-		toolbar.style.display = 'flex';
-		toolbar.style.visibility = 'visible';
+		toolbar.style.setProperty('--sr-left', `${pos.left}px`);
+		toolbar.style.setProperty('--sr-top', `${pos.top}px`);
+		toolbar.classList.remove('sr-hidden');
 
 		// 用实测尺寸修正定位 + 视口边界修正
-		requestAnimationFrame(() => {
+		window.requestAnimationFrame(() => {
 			if (!this.floatingToolbar) return;
 			const rect = this.floatingToolbar.getBoundingClientRect();
 
 			// 如果估算与实测差异大，用实测值重新计算
 			if (Math.abs(rect.width - estW) > 4 || Math.abs(rect.height - estH) > 4) {
 				const corrected = calcToolbarPosition(direction, coords, rect.width, rect.height, gap);
-				this.floatingToolbar.style.left = `${corrected.left}px`;
-				this.floatingToolbar.style.top = `${corrected.top}px`;
+				this.floatingToolbar.style.setProperty('--sr-left', `${corrected.left}px`);
+				this.floatingToolbar.style.setProperty('--sr-top', `${corrected.top}px`);
 			}
 
 			// 视口边界修正
@@ -421,7 +431,7 @@ export default class SymbolStripperPlugin extends Plugin {
 	/** 隐藏浮动工具栏（保留DOM，仅隐藏可见性） */
 	private hideFloatingToolbar(): void {
 		if (this.floatingToolbar) {
-			this.floatingToolbar.style.display = 'none';
+			this.floatingToolbar.classList.add('sr-hidden');
 		}
 		this.currentEditor = null;
 	}
@@ -469,9 +479,8 @@ export default class SymbolStripperPlugin extends Plugin {
 
 		// 定位下拉菜单
 		const btnRect = anchorBtn.getBoundingClientRect();
-		dropdown.style.position = 'fixed';
-		dropdown.style.left = `${btnRect.left}px`;
-		dropdown.style.top = `${btnRect.bottom + 4}px`;
+		dropdown.style.setProperty('--sr-left', `${btnRect.left}px`);
+		dropdown.style.setProperty('--sr-top', `${btnRect.bottom + 4}px`);
 	}
 
 	/** 隐藏"更多"下拉菜单 */
@@ -524,7 +533,7 @@ export default class SymbolStripperPlugin extends Plugin {
 	}
 
 	/** 应用预设到选中文本 */
-	private applyPreset(editor: any, selection: string, preset: RemovePreset): void {
+	private applyPreset(editor: Editor, selection: string, preset: RemovePreset): void {
 		try {
 			const result = preset.mode === 'char'
 				? removeChars(selection, preset.items)
@@ -539,20 +548,20 @@ export default class SymbolStripperPlugin extends Plugin {
 
 	/** 加载设置 */
 	async loadSettings(): Promise<void> {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		this.settings = { ...DEFAULT_SETTINGS, ...(await this.loadData() as Partial<SymbolStripperSettings>) };
 		// 确保 useModes 字段完整（字段级合并，兼容旧配置缺少部分字段）
 		this.settings.useModes = { ...DEFAULT_SETTINGS.useModes, ...this.settings.useModes };
 		// 兼容旧版 contextMenu 字段 → 拆分为 contextMenuPresets + contextMenuEraserBrush
-		if ((this.settings.useModes as any).contextMenu !== undefined && (this.settings.useModes as any).contextMenuPresets === undefined) {
-			const oldVal = (this.settings.useModes as any).contextMenu;
+		if ((this.settings.useModes as unknown as Record<string, unknown>).contextMenu !== undefined && (this.settings.useModes as unknown as Record<string, unknown>).contextMenuPresets === undefined) {
+			const oldVal = (this.settings.useModes as unknown as Record<string, unknown>).contextMenu as boolean;
 			this.settings.useModes.contextMenuPresets = oldVal;
 			this.settings.useModes.contextMenuEraserBrush = oldVal;
-			delete (this.settings.useModes as any).contextMenu;
+			delete (this.settings.useModes as unknown as Record<string, unknown>).contextMenu;
 		}
 		// 兼容旧版 eraserBrush 字段 → doubleClickEraserBrush
-		if ((this.settings.useModes as any).eraserBrush !== undefined && (this.settings.useModes as any).doubleClickEraserBrush === undefined) {
-			this.settings.useModes.doubleClickEraserBrush = (this.settings.useModes as any).eraserBrush;
-			delete (this.settings.useModes as any).eraserBrush;
+		if ((this.settings.useModes as unknown as Record<string, unknown>).eraserBrush !== undefined && (this.settings.useModes as unknown as Record<string, unknown>).doubleClickEraserBrush === undefined) {
+			this.settings.useModes.doubleClickEraserBrush = (this.settings.useModes as unknown as Record<string, unknown>).eraserBrush as boolean;
+			delete (this.settings.useModes as unknown as Record<string, unknown>).eraserBrush;
 		}
 		// 确保 followingToolbarPreset 存在（兼容旧配置）
 		if (!this.settings.followingToolbarPreset) {

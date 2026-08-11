@@ -1,0 +1,368 @@
+[1mdiff --git a/src/settings.ts b/src/settings.ts[m
+[1mindex 2d65326..bd32b7c 100644[m
+[1m--- a/src/settings.ts[m
+[1m+++ b/src/settings.ts[m
+[36m@@ -1,53 +1,53 @@[m
+[31m-/**[m
+[31m- * 符号剔除器 - 预设配置与设置页[m
+[32m+[m[32m﻿/**[m
+[32m+[m[32m * 绗﹀彿鍓旈櫎鍣?- 棰勮閰嶇疆涓庤缃〉[m
+  */[m
+ [m
+ import { App, Notice, PluginSettingTab, Setting, setIcon } from 'obsidian';[m
+ import type SymbolStripperPlugin from './main';[m
+ import { type LangOption, initLang, t } from './i18n';[m
+ [m
+[31m-/** 单个剔除预设 */[m
+[32m+[m[32m/** 鍗曚釜鍓旈櫎棰勮 */[m
+ export interface RemovePreset {[m
+ 	name: string;[m
+ 	mode: 'char' | 'regex';[m
+ 	items: string[];[m
+ }[m
+ [m
+[31m-/** 使用模式开关 */[m
+[32m+[m[32m/** 浣跨敤妯″紡寮€鍏?*/[m
+ export interface UseModes {[m
+[31m-	contextMenuPresets: boolean;     // 右键菜单：剔除预设[m
+[31m-	contextMenuEraserBrush: boolean; // 右键菜单：剔除刷[m
+[31m-	followingToolbar: boolean;       // 跟随栏[m
+[31m-	doubleClickEraserBrush: boolean; // 双击启用剔除刷[m
+[32m+[m	[32mcontextMenuPresets: boolean;     // 鍙抽敭鑿滃崟锛氬墧闄ら璁?[m
+[32m+[m	[32mcontextMenuEraserBrush: boolean; // 鍙抽敭鑿滃崟锛氬墧闄ゅ埛[m
+[32m+[m	[32mfollowingToolbar: boolean;       // 璺熼殢鏍?[m
+[32m+[m	[32mdoubleClickEraserBrush: boolean; // 鍙屽嚮鍚敤鍓旈櫎鍒?[m
+ }[m
+ [m
+[31m-/** 默认预设列表 */[m
+[32m+[m[32m/** 榛樿棰勮鍒楄〃 */[m
+ export const DEFAULT_PRESETS: RemovePreset[] = [[m
+[31m-	{ name: '剔除数字/Strip Digits', mode: 'char', items: ['0123456789'] },[m
+[31m-	{ name: '剔除空白/Strip Whitespace', mode: 'regex', items: ['\\s+'] },[m
+[31m-	{ name: '剔除中文标点/Strip Cn Punctuation', mode: 'regex', items: ["[，。！？、；：\u201c\u201d\u2018\u2019【】（）《》…—]"] },[m
+[31m-	{ name: '剔除英文标点/Strip En Punctuation', mode: 'char', items: ['.,!?;:\'\"()[]{}<>'] },[m
+[32m+[m	[32m{ name: '鍓旈櫎鏁板瓧/Strip Digits', mode: 'char', items: ['0123456789'] },[m
+[32m+[m	[32m{ name: '鍓旈櫎绌虹櫧/Strip Whitespace', mode: 'regex', items: ['\\s+'] },[m
+[32m+[m	[32m{ name: '鍓旈櫎涓枃鏍囩偣/Strip Cn Punctuation', mode: 'regex', items: ["[锛屻€傦紒锛熴€侊紱锛歕u201c\u201d\u2018\u2019銆愩€戯紙锛夈€娿€嬧€︹€擼"] },[m
+[32m+[m	[32m{ name: '鍓旈櫎鑻辨枃鏍囩偣/Strip En Punctuation', mode: 'char', items: ['.,!?;:\'\"()[]{}<>'] },[m
+ ];[m
+ [m
+[31m-/** 跟随栏位置选项（3×3九宫格顺序：左上→右上，左→右，左下→右下，不含中心占位） */[m
+[32m+[m[32m/** 璺熼殢鏍忎綅缃€夐」锛?脳3涔濆鏍奸『搴忥細宸︿笂鈫掑彸涓婏紝宸︹啋鍙筹紝宸︿笅鈫掑彸涓嬶紝涓嶅惈涓績鍗犱綅锛?*/[m
+ export const TOOLBAR_POSITIONS = [[m
+[31m-	{ value: 'top-left', label: '左上方', icon: 'arrow-up-left' },[m
+[31m-	{ value: 'top', label: '正上方', icon: 'arrow-up' },[m
+[31m-	{ value: 'top-right', label: '右上方', icon: 'arrow-up-right' },[m
+[31m-	{ value: 'left', label: '正左侧', icon: 'arrow-left' },[m
+[31m-	{ value: 'right', label: '正右侧', icon: 'arrow-right' },[m
+[31m-	{ value: 'bottom-left', label: '左下方', icon: 'arrow-down-left' },[m
+[31m-	{ value: 'bottom', label: '正下方', icon: 'arrow-down' },[m
+[31m-	{ value: 'bottom-right', label: '右下方', icon: 'arrow-down-right' },[m
+[32m+[m	[32m{ value: 'top-left', label: '宸︿笂鏂?, icon: 'arrow-up-left' },[m
+[32m+[m	[32m{ value: 'top', label: '姝ｄ笂鏂?, icon: 'arrow-up' },[m
+[32m+[m	[32m{ value: 'top-right', label: '鍙充笂鏂?, icon: 'arrow-up-right' },[m
+[32m+[m	[32m{ value: 'left', label: '姝ｅ乏渚?, icon: 'arrow-left' },[m
+[32m+[m	[32m{ value: 'right', label: '姝ｅ彸渚?, icon: 'arrow-right' },[m
+[32m+[m	[32m{ value: 'bottom-left', label: '宸︿笅鏂?, icon: 'arrow-down-left' },[m
+[32m+[m	[32m{ value: 'bottom', label: '姝ｄ笅鏂?, icon: 'arrow-down' },[m
+[32m+[m	[32m{ value: 'bottom-right', label: '鍙充笅鏂?, icon: 'arrow-down-right' },[m
+ ] as const;[m
+ [m
+[31m-/** 九宫格中心占位（不可选，仅作视觉锚点） */[m
+[31m-export const POSITION_CENTER = { label: '光标', icon: 'scan' } as const;[m
+[32m+[m[32m/** 涔濆鏍间腑蹇冨崰浣嶏紙涓嶅彲閫夛紝浠呬綔瑙嗚閿氱偣锛?*/[m
+[32m+[m[32mexport const POSITION_CENTER = { label: '鍏夋爣', icon: 'scan' } as const;[m
+ [m
+[31m-/** 工具栏定位方向类型（从 TOOLBAR_POSITIONS 推导） */[m
+[32m+[m[32m/** 宸ュ叿鏍忓畾浣嶆柟鍚戠被鍨嬶紙浠?TOOLBAR_POSITIONS 鎺ㄥ锛?*/[m
+ export type ToolbarDirection = typeof TOOLBAR_POSITIONS[number]['value'];[m
+ [m
+[31m-/** 插件设置 */[m
+[32m+[m[32m/** 鎻掍欢璁剧疆 */[m
+ export interface SymbolStripperSettings {[m
+ 	presets: RemovePreset[];[m
+ 	useModes: UseModes;[m
+[36m@@ -69,14 +69,14 @@[m [mexport const DEFAULT_SETTINGS: SymbolStripperSettings = {[m
+ 	language: 'auto',[m
+ };[m
+ [m
+[31m-/** Tab 定义 */[m
+[32m+[m[32m/** Tab 瀹氫箟 */[m
+ interface TabDef {[m
+ 	id: string;[m
+ 	name: string;[m
+ 	icon: string;[m
+ }[m
+ [m
+[31m-/** 设置页面 */[m
+[32m+[m[32m/** 璁剧疆椤甸潰 */[m
+ export class SymbolStripperSettingTab extends PluginSettingTab {[m
+ 	plugin: SymbolStripperPlugin;[m
+ 	activeTab: string = 'general';[m
+[36m@@ -97,16 +97,16 @@[m [mexport class SymbolStripperSettingTab extends PluginSettingTab {[m
+ 		const scrollContainer = containerEl.closest('.vertical-tab-content') as HTMLElement;[m
+ 		const savedScroll = scrollContainer?.scrollTop ?? 0;[m
+ [m
+[31m-		// 锁定滚动容器，防止 empty() 导致可见的跳顶[m
+[32m+[m		[32m// 閿佸畾婊氬姩瀹瑰櫒锛岄槻姝?empty() 瀵艰嚧鍙鐨勮烦椤?[m
+ 		if (scrollContainer) {[m
+[31m-			scrollContainer.style.overflow = 'hidden';[m
+[32m+[m			[32mscrollContainer.classList.add('sr-scroll-locked');[m
+ 		}[m
+ [m
+ 		containerEl.empty();[m
+ [m
+[31m-		containerEl.createEl('h2', { text: t('plugin.name') });[m
+[32m+[m		[32mnew Setting(containerEl).setName(t('plugin.name')).setHeading();[m
+ [m
+[31m-		// === Tab 栏 ===[m
+[32m+[m		[32m// === Tab 鏍?===[m
+ 		const tabs: TabDef[] = [[m
+ 			{ id: 'general', name: t('tab.general'), icon: 'gear' },[m
+ 			{ id: 'presets', name: t('tab.presets'), icon: 'lucide-rectangle-ellipsis' },[m
+[36m@@ -125,7 +125,7 @@[m [mexport class SymbolStripperSettingTab extends PluginSettingTab {[m
+ 			});[m
+ 		}[m
+ [m
+[31m-		// === Tab 内容区 ===[m
+[32m+[m		[32m// === Tab 鍐呭鍖?===[m
+ 		const content = containerEl.createEl('div', { cls: 'symbol-stripper-content' });[m
+ [m
+ 		if (this.activeTab === 'general') {[m
+[36m@@ -136,13 +136,13 @@[m [mexport class SymbolStripperSettingTab extends PluginSettingTab {[m
+ 			this.displayImportExport(content);[m
+ 		}[m
+ [m
+[31m-		// 恢复滚动位置并解锁容器（overflow:hidden 期间不渲染跳顶）[m
+[32m+[m		[32m// 鎭㈠婊氬姩浣嶇疆骞惰В閿佸鍣紙overflow:hidden 鏈熼棿涓嶆覆鏌撹烦椤讹級[m
+ 		if (scrollContainer) {[m
+ 			scrollContainer.scrollTop = savedScroll;[m
+[31m-			scrollContainer.style.overflow = '';[m
+[32m+[m			[32mscrollContainer.classList.remove('sr-scroll-locked');[m
+ 		}[m
+ [m
+[31m-		// 手动计算目标 scrollTop 并平滑滚动，避免 scrollIntoView 的布局延迟[m
+[32m+[m		[32m// 鎵嬪姩璁＄畻鐩爣 scrollTop 骞跺钩婊戞粴鍔紝閬垮厤 scrollIntoView 鐨勫竷灞€寤惰繜[m
+ 		if (shouldAutoScroll) {[m
+ 			const detailsList = containerEl.querySelectorAll('.preset-details');[m
+ 			const target = detailsList[this.openPresetIndex] as HTMLElement;[m
+[36m@@ -150,7 +150,7 @@[m [mexport class SymbolStripperSettingTab extends PluginSettingTab {[m
+ 			if (target && scrollContainer) {[m
+ 				const containerRect = scrollContainer.getBoundingClientRect();[m
+ 				const targetRect = target.getBoundingClientRect();[m
+[31m-				// 目标居中：当前scrollTop + 相对偏移 - 半容器高 + 半目标高[m
+[32m+[m				[32m// 鐩爣灞呬腑锛氬綋鍓峴crollTop + 鐩稿鍋忕Щ - 鍗婂鍣ㄩ珮 + 鍗婄洰鏍囬珮[m
+ 				const targetScrollTop = scrollContainer.scrollTop[m
+ 					+ targetRect.top - containerRect.top[m
+ 					- scrollContainer.clientHeight / 2[m
+[36m@@ -160,16 +160,16 @@[m [mexport class SymbolStripperSettingTab extends PluginSettingTab {[m
+ 		}[m
+ 	}[m
+ [m
+[31m-	/** 常规设置 */[m
+[32m+[m	[32m/** 甯歌璁剧疆 */[m
+ 	private displayGeneral(container: HTMLElement): void {[m
+[31m-		// === 语言/Language ===[m
+[31m-		container.createEl('h3', { text: '语言/Language' });[m
+[32m+[m		[32m// === 璇█/Language ===[m
+[32m+[m		[32mnew Setting(container).setName('璇█/Language').setHeading();[m
+ [m
+ 		new Setting(container)[m
+[31m-			.setName('语言切换/Switch Language')[m
+[31m-			.setDesc('若显示语言显示错误，或者你只是想切换着玩，这里切换语言 / If the display language is incorrect, or you just want to switch for fun, change it here.')[m
+[32m+[m			[32m.setName('璇█鍒囨崲/Switch Language')[m
+[32m+[m			[32m.setDesc('鑻ユ樉绀鸿瑷€鏄剧ず閿欒锛屾垨鑰呬綘鍙槸鎯冲垏鎹㈢潃鐜╋紝杩欓噷鍒囨崲璇█ / If the display language is incorrect, or you just want to switch for fun, change it here.')[m
+ 			.addDropdown(dropdown => dropdown[m
+[31m-				.addOptions({ 'auto': '跟随系统/Follow System', 'zh-CN': '中文', 'en': 'English' })[m
+[32m+[m				[32m.addOptions({ 'auto': '璺熼殢绯荤粺/Follow System', 'zh-CN': '涓枃', 'en': 'English' })[m
+ 				.setValue(this.plugin.settings.language)[m
+ 				.onChange(async (value: string) => {[m
+ 					this.plugin.settings.language = value as LangOption;[m
+[36m@@ -179,8 +179,8 @@[m [mexport class SymbolStripperSettingTab extends PluginSettingTab {[m
+ 				})[m
+ 			);[m
+ [m
+[31m-		// === 右键菜单 ===[m
+[31m-		container.createEl('h3', { text: t('general.contextMenu') });[m
+[32m+[m		[32m// === 鍙抽敭鑿滃崟 ===[m
+[32m+[m		[32mnew Setting(container).setName(t('general.contextMenu')).setHeading();[m
+ [m
+ 		new Setting(container)[m
+ 			.setName(t('general.contextMenuPresets'))[m
+[36m@@ -204,8 +204,8 @@[m [mexport class SymbolStripperSettingTab extends PluginSettingTab {[m
+ 				})[m
+ 			);[m
+ [m
+[31m-		// === 跟随栏 ===[m
+[31m-		container.createEl('h3', { text: t('general.followingToolbar') });[m
+[32m+[m		[32m// === 璺熼殢鏍?===[m
+[32m+[m		[32mnew Setting(container).setName(t('general.followingToolbar')).setHeading();[m
+ [m
+ 		new Setting(container)[m
+ 			.setName(t('general.followingToolbar'))[m
+[36m@@ -226,7 +226,7 @@[m [mexport class SymbolStripperSettingTab extends PluginSettingTab {[m
+ 				let activeBtn: HTMLDivElement | null = null;[m
+ [m
+ 				for (let i = 0; i < TOOLBAR_POSITIONS.length; i++) {[m
+[31m-					// 在第4个位置（left 之后）插入中心占位格[m
+[32m+[m					[32m// 鍦ㄧ4涓綅缃紙left 涔嬪悗锛夋彃鍏ヤ腑蹇冨崰浣嶆牸[m
+ 					if (i === 4) {[m
+ 						const centerEl = grid.createDiv({ cls: 'sr-position-btn sr-position-center' });[m
+ 						setIcon(centerEl, POSITION_CENTER.icon);[m
+[36m@@ -253,8 +253,8 @@[m [mexport class SymbolStripperSettingTab extends PluginSettingTab {[m
+ 				}[m
+ 			});[m
+ [m
+[31m-		// === 剔除刷 ===[m
+[31m-		container.createEl('h3', { text: t('general.eraserBrush') });[m
+[32m+[m		[32m// === 鍓旈櫎鍒?===[m
+[32m+[m		[32mnew Setting(container).setName(t('general.eraserBrush')).setHeading();[m
+ [m
+ 		new Setting(container)[m
+ 			.setName(t('general.commonPreset'))[m
+[36m@@ -282,19 +282,29 @@[m [mexport class SymbolStripperSettingTab extends PluginSettingTab {[m
+ 			);[m
+ 	}[m
+ [m
+[31m-	/** 预设管理 */[m
+[32m+[m	[32m/** 棰勮绠＄悊 */[m
+ 	private displayPresets(container: HTMLElement): void {[m
+[31m-		// === 使用说明 ===[m
+[31m-		container.createEl('h3', { text: t('presets.guide') });[m
+[32m+[m		[32m// === 浣跨敤璇存槑 ===[m
+[32m+[m		[32mnew Setting(container).setName(t('presets.guide')).setHeading();[m
+ [m
+ 		const guide = container.createEl('div', { cls: 'sr-guide' });[m
+ [m
+ 		guide.createEl('p', { text: t('presets.guide.intro') });[m
+ 		const formatList = guide.createEl('ul');[m
+ 		formatList.createEl('li', { text: t('presets.guide.name') });[m
+[31m-		formatList.createEl('li').innerHTML = t('presets.guide.charMode');[m
+[31m-		formatList.createEl('li').innerHTML = t('presets.guide.regexMode');[m
+[31m-		formatList.createEl('li').innerHTML = t('presets.guide.separator');[m
+[32m+[m		[32m// charMode: <b>Char Mode</b>: desc <code>code</code> suffix[m
+[32m+[m		[32mconst charLi = formatList.createEl('li');[m
+[32m+[m		[32mcharLi.createEl('b', { text: t('presets.guide.charMode.label') });[m
+[32m+[m		[32mcharLi.appendText(t('presets.guide.charMode.desc'));[m
+[32m+[m		[32mcharLi.createEl('code', { text: t('presets.guide.charMode.code') });[m
+[32m+[m		[32mcharLi.appendText(t('presets.guide.charMode.suffix'));[m
+[32m+[m		[32m// regexMode: <b>Regex Mode</b>: desc <code>code</code> suffix[m
+[32m+[m		[32mconst regexLi = formatList.createEl('li');[m
+[32m+[m		[32mregexLi.createEl('b', { text: t('presets.guide.regexMode.label') });[m
+[32m+[m		[32mregexLi.appendText(t('presets.guide.regexMode.desc'));[m
+[32m+[m		[32mregexLi.createEl('code', { text: t('presets.guide.regexMode.code') });[m
+[32m+[m		[32mregexLi.appendText(t('presets.guide.regexMode.suffix'));[m
+[32m+[m		[32mformatList.createEl('li', { text: t('presets.guide.separator') });[m
+ [m
+ 		guide.createEl('p', { text: t('presets.guide.regexSyntax'), cls: 'sr-guide-subtitle' });[m
+ 		const regexTable = guide.createEl('table', { cls: 'sr-regex-table' });[m
+[36m@@ -323,15 +333,15 @@[m [mexport class SymbolStripperSettingTab extends PluginSettingTab {[m
+ 		];[m
+ 		for (const [syntax, desc, example] of regexItems) {[m
+ 			const row = tbody.createEl('tr');[m
+[31m-			row.createEl('td').innerHTML = `<code>${syntax}</code>`;[m
+[32m+[m			[32mrow.createEl('td').createEl('code', { text: syntax });[m
+ 			row.createEl('td', { text: desc });[m
+[31m-			row.createEl('td').innerHTML = `<code>${example}</code>`;[m
+[32m+[m			[32mrow.createEl('td').createEl('code', { text: example });[m
+ 		}[m
+ [m
+[31m-		// === 剔除预设 ===[m
+[31m-		container.createEl('h3', { text: t('presets.title') });[m
+[32m+[m		[32m// === 鍓旈櫎棰勮 ===[m
+[32m+[m		[32mnew Setting(container).setName(t('presets.title')).setHeading();[m
+ [m
+[31m-		// 筛选框（处理中文输入法组合问题）[m
+[32m+[m		[32m// 绛涢€夋锛堝鐞嗕腑鏂囪緭鍏ユ硶缁勫悎闂锛?[m
+ 		const filterSetting = new Setting(container)[m
+ 			.setName(t('presets.filter'))[m
+ 			.setDesc(t('presets.filter.desc'))[m
+[36m@@ -353,7 +363,7 @@[m [mexport class SymbolStripperSettingTab extends PluginSettingTab {[m
+ 				})[m
+ 			);[m
+ [m
+[31m-		// 监听输入法组合事件，解决中文输入时 onChange 过早触发[m
+[32m+[m		[32m// 鐩戝惉杈撳叆娉曠粍鍚堜簨浠讹紝瑙ｅ喅涓枃杈撳叆鏃?onChange 杩囨棭瑙﹀彂[m
+ 		const input = filterSetting.controlEl.querySelector('input');[m
+ 		if (input) {[m
+ 			input.addEventListener('compositionstart', () => { this.isComposing = true; });[m
+[36m@@ -364,7 +374,7 @@[m [mexport class SymbolStripperSettingTab extends PluginSettingTab {[m
+ 			});[m
+ 		}[m
+ [m
+[31m-		// 恢复筛选框焦点和光标位置[m
+[32m+[m		[32m// 鎭㈠绛涢€夋鐒︾偣鍜屽厜鏍囦綅缃?[m
+ 		if (this.presetFilter) {[m
+ 			if (input) {[m
+ 				input.focus();[m
+[36m@@ -376,7 +386,7 @@[m [mexport class SymbolStripperSettingTab extends PluginSettingTab {[m
+ 		for (let i = 0; i < this.plugin.settings.presets.length; i++) {[m
+ 			const preset = this.plugin.settings.presets[i];[m
+ [m
+[31m-			// 筛选：根据模式匹配预设名或内容[m
+[32m+[m			[32m// 绛涢€夛細鏍规嵁妯″紡鍖归厤棰勮鍚嶆垨鍐呭[m
+ 			if (filter) {[m
+ 				if (this.presetFilterMode === 'name') {[m
+ 					if (!preset.name.toLowerCase().includes(filter)) continue;[m
+[36m@@ -459,7 +469,7 @@[m [mexport class SymbolStripperSettingTab extends PluginSettingTab {[m
+ 			);[m
+ 	}[m
+ [m
+[31m-	/** 导入/导出 */[m
+[32m+[m	[32m/** 瀵煎叆/瀵煎嚭 */[m
+ 	private displayImportExport(container: HTMLElement): void {[m
+ 		new Setting(container)[m
+ 			.setName(t('importExport.export'))[m
+[36m@@ -470,6 +480,7 @@[m [mexport class SymbolStripperSettingTab extends PluginSettingTab {[m
+ 					const json = JSON.stringify(this.plugin.settings.presets, null, 2);[m
+ 					const blob = new Blob([json], { type: 'application/json' });[m
+ 					const url = URL.createObjectURL(blob);[m
+[32m+[m									[32m// eslint-disable-next-line obsidianmd/prefer-create-el -- temporary element for programmatic download, must not be appended to DOM[m
+ 					const a = document.createElement('a');[m
+ 					a.href = url;[m
+ 					a.download = 'symbol-stripper-presets.json';[m
+[36m@@ -484,6 +495,7 @@[m [mexport class SymbolStripperSettingTab extends PluginSettingTab {[m
+ 			.addButton(btn => btn[m
+ 				.setButtonText(t('importExport.import.btn'))[m
+ 				.onClick(() => {[m
+[32m+[m					[32m// eslint-disable-next-line obsidianmd/prefer-create-el -- temporary file picker, must not be appended to DOM[m
+ 					const input = document.createElement('input');[m
+ 					input.type = 'file';[m
+ 					input.accept = '.json';[m
+[36m@@ -492,25 +504,28 @@[m [mexport class SymbolStripperSettingTab extends PluginSettingTab {[m
+ 						if (!file) return;[m
+ 						const text = await file.text();[m
+ 						try {[m
+[31m-							const presets = JSON.parse(text);[m
+[31m-							if (!Array.isArray(presets)) throw new Error(t('import.notArray'));[m
+[31m-							// 校验每个预设的结构[m
+[32m+[m							[32m// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment[m
+[32m+[m							[32mconst raw: unknown = JSON.parse(text);[m
+[32m+[m					[32m// eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- Array.isArray accepts any, passing unknown is safe[m
+[32m+[m						[32mif (!Array.isArray(raw)) throw new Error(t('import.notArray'));[m
+[32m+[m							[32mconst presets = raw as Record<string, unknown>[];[m
+[32m+[m							[32m// 鏍￠獙姣忎釜棰勮鐨勭粨鏋?[m
+ 							for (let i = 0; i < presets.length; i++) {[m
+ 								const p = presets[i];[m
+ 								if (typeof p.name !== 'string' || !p.name.trim()) throw new Error(t('import.invalidName', i + 1));[m
+ 								if (p.mode !== 'char' && p.mode !== 'regex') throw new Error(t('import.invalidMode', i + 1));[m
+ 								if (!Array.isArray(p.items)) throw new Error(t('import.invalidItems', i + 1));[m
+ 							}[m
+[31m-							this.plugin.settings.presets = presets;[m
+[32m+[m							[32mthis.plugin.settings.presets = raw as RemovePreset[];[m
+ 							await this.plugin.saveSettings();[m
+ 							this.display();[m
+ 							new Notice(t('notice.importSuccess'));[m
+[31m-						} catch (e: any) {[m
+[31m-							new Notice(t('notice.importFailed', e.message ?? String(e)), 5000);[m
+[32m+[m						[32m} catch (e: unknown) {[m
+[32m+[m							[32mnew Notice(t('notice.importFailed', (e instanceof Error ? e.message : String(e))), 5000);[m
+ 						}[m
+ 					};[m
+ 					input.click();[m
+ 				})[m
+ 			);[m
+ 	}[m
+[31m-}[m
+\ No newline at end of file[m
+[32m+[m[32m}[m
