@@ -65,7 +65,7 @@ Select text and strip specified characters or regex matches with one click.
 
 **手动安装**
 
-1. 从 [Releases](https://github.com/Tacai/symbol-stripper/releases) 下载 `main.js`、`manifest.json`、`styles.css`
+1. 从 [Releases](https://github.com/Tasete/symbol-stripper/releases) 下载 `main.js`、`manifest.json`、`styles.css`
 2. 在 vault 中创建 `.obsidian/plugins/symbol-stripper/` 目录
 3. 将三个文件复制到该目录
 4. 重启 Obsidian → 设置 → 社区插件 → 启用 Symbol Stripper
@@ -117,7 +117,7 @@ Select text and strip specified characters or regex matches with one click.
 
 **Manual Installation**
 
-1. Download `main.js`, `manifest.json`, `styles.css` from [Releases](https://github.com/Tacai/symbol-stripper/releases)
+1. Download `main.js`, `manifest.json`, `styles.css` from [Releases](https://github.com/Tasete/symbol-stripper/releases)
 2. Create `.obsidian/plugins/symbol-stripper/` directory in your vault
 3. Copy the three files into that directory
 4. Restart Obsidian → Settings → Community Plugins → Enable Symbol Stripper
