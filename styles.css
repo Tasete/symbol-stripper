@@ -1,0 +1,368 @@
+/* 符号剔除器 - 样式文件 */
+
+.preset-details {
+	margin-bottom: 12px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	padding: 0;
+}
+
+.preset-details summary {
+	padding: 10px 14px;
+	cursor: pointer;
+	font-weight: 600;
+	font-size: 1em;
+	list-style: none;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	user-select: none;
+}
+
+.preset-details summary::-webkit-details-marker {
+	display: none;
+}
+
+.preset-details summary::before {
+	content: '▶';
+	font-size: 0.7em;
+	transition: transform 0.15s ease;
+	display: inline-block;
+}
+
+.preset-details[open] summary::before {
+	transform: rotate(90deg);
+}
+
+/* 预设标题右侧删除按钮 */
+.sr-preset-delete-btn {
+	margin-left: auto;
+	padding: 2px 10px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background: transparent;
+	color: var(--text-muted);
+	font-size: 12px;
+	cursor: pointer;
+	opacity: 0.6;
+	transition: opacity 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+}
+
+.sr-preset-delete-btn:hover {
+	opacity: 1;
+	color: #fff;
+	background: var(--text-error);
+}
+
+.preset-body {
+	padding: 4px 14px 10px;
+	border-top: 1px solid var(--background-modifier-border);
+}
+
+/* ===== 浮动工具栏样式 ===== */
+.symbol-stripper-toolbar {
+	position: fixed;
+	z-index: 1000;
+	display: flex;
+	flex-direction: row;
+	gap: 2px;
+	padding: 4px 6px;
+	background-color: color-mix(in srgb, var(--background-secondary) 60%, transparent);
+	border: 1px solid transparent;
+	border-radius: 6px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+	backdrop-filter: blur(6px);
+	-webkit-backdrop-filter: blur(6px);
+	background-clip: padding-box;
+	animation: sr-toolbar-fadein 0.15s ease-out;
+}
+
+.symbol-stripper-btn {
+	padding: 5px 6px;
+	border: none;
+	border-radius: 4px;
+	background-color: transparent;
+	box-shadow: none;
+	color: var(--text-muted);
+	font-size: 16px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: background-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+}
+
+.symbol-stripper-btn:hover {
+	background-color: color-mix(in srgb, var(--background-modifier-hover) 65%, transparent);
+	color: var(--text-normal);
+	transform: translateY(-1px);
+}
+
+.symbol-stripper-btn:active {
+	background-color: color-mix(in srgb, var(--background-modifier-hover) 85%, transparent);
+	transform: translateY(0) scale(0.92);
+}
+
+/* "常用"按钮悬停高亮 */
+.sr-btn-common:hover {
+	color: var(--text-accent);
+}
+
+/* "更多"按钮悬停高亮 */
+.sr-btn-more:hover {
+	color: var(--text-accent);
+}
+
+/* ===== 使用说明样式 ===== */
+.sr-guide {
+	padding: 4px 0;
+	color: var(--text-muted);
+	font-size: 0.92em;
+	line-height: 1.6;
+}
+
+.sr-guide p {
+	margin: 8px 0 4px;
+}
+
+.sr-guide ul {
+	margin: 4px 0 12px 20px;
+	padding: 0;
+}
+
+.sr-guide li {
+	margin: 3px 0;
+}
+
+.sr-guide code {
+	background: var(--background-modifier-hover);
+	border-radius: 3px;
+	padding: 1px 5px;
+	font-size: 0.88em;
+	color: var(--text-accent);
+}
+
+.sr-guide-subtitle {
+	font-weight: 600;
+	color: var(--text-normal) !important;
+	margin-top: 12px !important;
+}
+
+.sr-regex-table {
+	width: 100%;
+	border-collapse: collapse;
+	margin: 8px 0 16px;
+	font-size: 0.88em;
+}
+
+.sr-regex-table th {
+	text-align: left;
+	padding: 6px 10px;
+	border-bottom: 2px solid var(--background-modifier-border);
+	color: var(--text-normal);
+	font-weight: 600;
+}
+
+.sr-regex-table td {
+	padding: 5px 10px;
+	border-bottom: 1px solid var(--background-modifier-border);
+	color: var(--text-muted);
+}
+
+.sr-regex-table code {
+	background: var(--background-modifier-hover);
+	border-radius: 3px;
+	padding: 1px 5px;
+	font-size: 0.88em;
+	color: var(--text-accent);
+}
+
+/* ===== 预设内容 textarea 样式 ===== */
+.preset-body .setting-item-control textarea {
+	width: 100%;
+	min-height: 80px;
+	font-family: var(--font-monospace);
+	font-size: 0.9em;
+	resize: vertical;
+}
+
+/* ===== Tab 分页样式 ===== */
+.symbol-stripper-tabs {
+	display: flex;
+	border-bottom: 2px solid var(--background-modifier-border);
+	margin-bottom: 24px;
+	padding: 0 8px;
+}
+
+.symbol-stripper-tab {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 12px;
+	cursor: pointer;
+	border-bottom: 2px solid transparent;
+	margin-bottom: -2px;
+	color: var(--text-muted);
+	transition: color 0.15s ease, border-bottom-color 0.15s ease;
+}
+
+.symbol-stripper-tab:hover {
+	color: var(--text-normal);
+	background-color: var(--background-modifier-hover);
+	border-radius: 4px 4px 0 0;
+}
+
+.symbol-stripper-tab.active {
+	color: var(--text-accent);
+	border-bottom-color: var(--text-accent);
+}
+
+.symbol-stripper-content {
+	padding: 0 8px;
+}
+
+@keyframes sr-toolbar-fadein {
+	from {
+		opacity: 0;
+		transform: translateY(4px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+/* ===== "更多"下拉菜单样式 ===== */
+.sr-more-dropdown {
+	position: fixed;
+	z-index: 1001;
+	min-width: 140px;
+	padding: 4px 0;
+	background-color: color-mix(in srgb, var(--background-secondary) 60%, transparent);
+	border: 1px solid transparent;
+	border-radius: 6px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+	backdrop-filter: blur(6px);
+	-webkit-backdrop-filter: blur(6px);
+	background-clip: padding-box;
+	animation: sr-toolbar-fadein 0.12s ease-out;
+}
+
+.sr-more-item {
+	padding: 6px 14px;
+	cursor: pointer;
+	font-size: 13px;
+	color: var(--text-normal);
+	transition: background-color 0.12s ease;
+}
+
+.sr-more-item:hover {
+	background-color: var(--background-modifier-hover);
+	color: var(--text-accent);
+}
+
+/* ===== 剔除刷指示器样式 ===== */
+.sr-eraser-indicator {
+	position: fixed;
+	bottom: 40px;
+	right: 20px;
+	z-index: 1002;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 12px;
+	background-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-radius: 20px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+	font-size: 13px;
+	animation: sr-toolbar-fadein 0.2s ease-out;
+}
+
+.sr-eraser-indicator-text {
+	white-space: nowrap;
+	font-weight: 500;
+}
+
+.sr-eraser-indicator-close {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 2px;
+	border: none;
+	border-radius: 50%;
+	background: transparent;
+	color: var(--text-on-accent);
+	cursor: pointer;
+	opacity: 0.7;
+	transition: opacity 0.15s ease, background-color 0.15s ease;
+}
+
+.sr-eraser-indicator-close:hover {
+	opacity: 1;
+	background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ===== 跟随栏位置九宫格选择器 ===== */
+.sr-position-grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 4px;
+	padding: 4px;
+}
+
+.sr-position-btn {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 2px;
+	padding: 6px 4px;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: background-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+	color: var(--text-muted);
+	border: 1px solid transparent;
+}
+
+.sr-position-btn:hover {
+	background-color: var(--background-modifier-hover);
+	color: var(--text-normal);
+}
+
+.sr-position-btn:active {
+	transform: scale(0.92);
+}
+
+.sr-position-btn.sr-position-active {
+	background-color: var(--background-modifier-active);
+	color: var(--text-normal);
+	border-color: var(--interactive-accent);
+}
+
+.sr-position-btn.sr-position-center {
+	cursor: default;
+	color: var(--text-faint);
+	opacity: 0.5;
+}
+
+.sr-position-btn.sr-position-center:hover {
+	background-color: transparent;
+	color: var(--text-faint);
+}
+
+.sr-position-btn svg {
+	width: 18px;
+	height: 18px;
+}
+
+.sr-position-label {
+	font-size: 10px;
+	line-height: 1;
+	white-space: nowrap;
+}
+
+/* ===== 剔除刷激活时光标样式 ===== */
+.sr-eraser-brush-active .markdown-source-view.mod-cm6 .cm-content {
+	cursor: crosshair;
+}
