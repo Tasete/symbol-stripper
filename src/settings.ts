@@ -2,7 +2,7 @@
  * 符号剔除器 - 预设配置与设置页
  */
 
-import { App, Notice, PluginSettingTab, Setting, setIcon, SettingPage, type SettingDefinitionItem } from 'obsidian';
+import { App, Notice, PluginSettingTab, Setting, setIcon } from 'obsidian';
 import type SymbolStripperPlugin from './main';
 import { type LangOption, initLang, t } from './i18n';
 
@@ -29,7 +29,7 @@ export const DEFAULT_PRESETS: RemovePreset[] = [
 	{ name: '剔除英文标点/Strip En Punctuation', mode: 'char', items: ['.,!?;:\'\"()[]{}<>'] },
 ];
 
-/** 跟随栏位置选项（3×3九宫格顺序：左上→右上，左→右，左下→右下，不含中心占位） */
+/** 跟随栏位置选项 */
 export const TOOLBAR_POSITIONS = [
 	{ value: 'top-left', label: '左上方', icon: 'arrow-up-left' },
 	{ value: 'top', label: '正上方', icon: 'arrow-up' },
@@ -41,10 +41,10 @@ export const TOOLBAR_POSITIONS = [
 	{ value: 'bottom-right', label: '右下方', icon: 'arrow-down-right' },
 ] as const;
 
-/** 九宫格中心占位（不可选，仅作视觉锚点） */
+/** 九宫格中心占位 */
 export const POSITION_CENTER = { label: '光标', icon: 'scan' } as const;
 
-/** 工具栏定位方向类型（从 TOOLBAR_POSITIONS 推导） */
+/** 工具栏定位方向类型 */
 export type ToolbarDirection = typeof TOOLBAR_POSITIONS[number]['value'];
 
 /** 插件设置 */
@@ -69,35 +69,34 @@ export const DEFAULT_SETTINGS: SymbolStripperSettings = {
 	language: 'auto',
 };
 
-/** Tab 定义 */
-interface TabDef {
-	id: string;
-	name: string;
-}
-
-/** 主设置页面 - 自定义Tab分页UI */
-class MainSettingPage extends SettingPage {
-	plugin!: SymbolStripperPlugin;
-	tab!: SymbolStripperSettingTab;
+/** 设置页面 */
+export class SymbolStripperSettingTab extends PluginSettingTab {
+	plugin: SymbolStripperPlugin;
+	presetFilter: string = '';
+	presetFilterMode: 'name' | 'content' = 'name';
+	isComposing: boolean = false;
 	private activeTab: string = 'general';
 	private openPresetIndex: number = -1;
 
-	private readonly TABS: TabDef[] = [
+	private readonly TABS = [
 		{ id: 'general', name: '' },
 		{ id: 'presets', name: '' },
 		{ id: 'importExport', name: '' },
 	];
 
+	constructor(app: App, plugin: SymbolStripperPlugin) {
+		super(app, plugin);
+		this.plugin = plugin;
+	}
+
 	display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
 
-		// 更新Tab名称（支持语言切换）
 		this.TABS[0].name = t('tab.general');
 		this.TABS[1].name = t('tab.presets');
 		this.TABS[2].name = t('tab.importExport');
 
-		// 渲染Tab栏
 		const tabBar = containerEl.createEl('div', { cls: 'symbol-stripper-tabs' });
 		for (const tabDef of this.TABS) {
 			const tabEl = tabBar.createEl('div', { cls: 'symbol-stripper-tab' });
@@ -113,7 +112,6 @@ class MainSettingPage extends SettingPage {
 			});
 		}
 
-		// 渲染内容区域
 		const contentEl = containerEl.createEl('div', { cls: 'symbol-stripper-content' });
 		switch (this.activeTab) {
 			case 'general':
@@ -132,7 +130,6 @@ class MainSettingPage extends SettingPage {
 	private displayGeneral(containerEl: HTMLElement): void {
 		const s = this.plugin.settings;
 
-		// 右键菜单组
 		new Setting(containerEl).setName(t('general.contextMenu')).setHeading();
 
 		new Setting(containerEl)
@@ -157,7 +154,6 @@ class MainSettingPage extends SettingPage {
 				})
 			);
 
-		// 跟随栏组
 		new Setting(containerEl).setName(t('general.followingToolbar')).setHeading();
 
 		new Setting(containerEl)
@@ -171,7 +167,6 @@ class MainSettingPage extends SettingPage {
 				})
 			);
 
-		// 位置九宫格
 		const posSetting = new Setting(containerEl)
 			.setName(t('general.displayPosition'))
 			.setDesc(t('general.displayPosition.desc'));
@@ -205,7 +200,6 @@ class MainSettingPage extends SettingPage {
 			});
 		}
 
-		// 剔除刷组
 		new Setting(containerEl).setName(t('general.eraserBrush')).setHeading();
 
 		new Setting(containerEl)
@@ -231,7 +225,6 @@ class MainSettingPage extends SettingPage {
 				})
 			);
 
-		// 语言组
 		new Setting(containerEl).setName('语言/Language').setHeading();
 
 		new Setting(containerEl)
@@ -253,7 +246,6 @@ class MainSettingPage extends SettingPage {
 	private displayPresets(containerEl: HTMLElement): void {
 		const doRefresh = () => this.refresh();
 
-		// === 使用说明 ===
 		new Setting(containerEl).setName(t('presets.guide')).setHeading();
 
 		const guide = containerEl.createEl('div', { cls: 'sr-guide' });
@@ -306,54 +298,52 @@ class MainSettingPage extends SettingPage {
 			exampleTd.createEl('code', { text: example });
 		}
 
-		// === 剔除预设 ===
 		new Setting(containerEl).setName(t('presets.title')).setHeading();
 
-		// 筛选框
 		const filterSetting = new Setting(containerEl)
 			.setName(t('presets.filter'))
 			.setDesc(t('presets.filter.desc'))
 			.addDropdown(dropdown => dropdown
 				.addOptions({ name: t('presets.filter.name'), content: t('presets.filter.content') })
-				.setValue(this.tab.presetFilterMode)
+				.setValue(this.presetFilterMode)
 				.onChange((value: string) => {
-					this.tab.presetFilterMode = value as 'name' | 'content';
+					this.presetFilterMode = value as 'name' | 'content';
 					doRefresh();
 				})
 			)
 			.addText(text => text
-				.setValue(this.tab.presetFilter)
+				.setValue(this.presetFilter)
 				.setPlaceholder(t('presets.filter.placeholder'))
 				.onChange((value) => {
-					if (this.tab.isComposing) return;
-					this.tab.presetFilter = value;
+					if (this.isComposing) return;
+					this.presetFilter = value;
 					doRefresh();
 				})
 			);
 
 		const input = filterSetting.controlEl.querySelector('input');
 		if (input) {
-			input.addEventListener('compositionstart', () => { this.tab.isComposing = true; });
+			input.addEventListener('compositionstart', () => { this.isComposing = true; });
 			input.addEventListener('compositionend', () => {
-				this.tab.isComposing = false;
-				this.tab.presetFilter = input.value;
+				this.isComposing = false;
+				this.presetFilter = input.value;
 				doRefresh();
 			});
 		}
 
-		if (this.tab.presetFilter) {
+		if (this.presetFilter) {
 			if (input) {
 				input.focus();
 				input.setSelectionRange(input.value.length, input.value.length);
 			}
 		}
 
-		const filter = this.tab.presetFilter.toLowerCase();
+		const filter = this.presetFilter.toLowerCase();
 		for (let i = 0; i < this.plugin.settings.presets.length; i++) {
 			const preset = this.plugin.settings.presets[i];
 
 			if (filter) {
-				if (this.tab.presetFilterMode === 'name') {
+				if (this.presetFilterMode === 'name') {
 					if (!preset.name.toLowerCase().includes(filter)) continue;
 				} else {
 					if (!preset.items.some(item => item.toLowerCase().includes(filter))) continue;
@@ -434,7 +424,6 @@ class MainSettingPage extends SettingPage {
 
 	/** 导入/导出 */
 	private displayImportExport(containerEl: HTMLElement): void {
-		// 导出配置
 		new Setting(containerEl)
 			.setName(t('importExport.export'))
 			.setDesc(t('importExport.export.desc'))
@@ -452,7 +441,6 @@ class MainSettingPage extends SettingPage {
 				})
 			);
 
-		// 导入配置
 		new Setting(containerEl)
 			.setName(t('importExport.import'))
 			.setDesc(t('importExport.import.desc'))
@@ -489,7 +477,7 @@ class MainSettingPage extends SettingPage {
 			);
 	}
 
-	/** 刷新预设页面（保持滚动位置） */
+	/** 刷新页面（保持滚动位置） */
 	private refresh(): void {
 		const shouldAutoScroll = this.openPresetIndex >= 0;
 		const scrollContainer = this.containerEl.closest('.vertical-tab-content') as HTMLElement;
@@ -520,66 +508,6 @@ class MainSettingPage extends SettingPage {
 					+ target.clientHeight / 2;
 				scrollContainer.scrollTo({ top: targetScrollTop, behavior: 'smooth' });
 			}
-		}
-	}
-}
-
-/** 设置页面 */
-export class SymbolStripperSettingTab extends PluginSettingTab {
-	plugin: SymbolStripperPlugin;
-	presetFilter: string = '';
-	presetFilterMode: 'name' | 'content' = 'name';
-	isComposing: boolean = false;
-
-	constructor(app: App, plugin: SymbolStripperPlugin) {
-		super(app, plugin);
-		this.plugin = plugin;
-	}
-
-	override getSettingDefinitions(): SettingDefinitionItem[] {
-		return [
-			{
-				type: 'page',
-				name: t('plugin.name'),
-				page: () => {
-					const p = new MainSettingPage();
-					p.plugin = this.plugin;
-					p.tab = this;
-					return p;
-				},
-			},
-		];
-	}
-
-	override getControlValue(key: string): unknown {
-		const s = this.plugin.settings;
-		if (key === 'language') return s.language;
-		if (key === 'followingToolbarPreset') return s.followingToolbarPreset;
-		if (key === 'followingToolbarPosition') return s.followingToolbarPosition;
-		if (key in s.useModes) return s.useModes[key as keyof UseModes];
-		return undefined;
-	}
-
-	override setControlValue(key: string, value: unknown): void {
-		const s = this.plugin.settings;
-		let needsUpdate = false;
-
-		if (key === 'language') {
-			s.language = value as LangOption;
-			initLang(value as LangOption);
-			needsUpdate = true;
-		} else if (key === 'followingToolbarPreset') {
-			s.followingToolbarPreset = value as string;
-		} else if (key === 'followingToolbarPosition') {
-			s.followingToolbarPosition = value as ToolbarDirection;
-		} else if (key in s.useModes) {
-			(s.useModes as unknown as Record<string, unknown>)[key] = value;
-		}
-
-		void this.plugin.saveSettings();
-
-		if (needsUpdate) {
-			this.update();
 		}
 	}
 }
