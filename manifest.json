@@ -1,8 +1,8 @@
 {
 	"id": "symbol-stripper",
 	"name": "Symbol Stripper",
-	"version": "1.0.1",
-	"minAppVersion": "1.0.0",
+	"version": "1.0.3",
+	"minAppVersion": "1.13.0",
 	"description": "选中文本，一键剔除指定字符或正则匹配 / Select text and strip specified characters or regex matches with one click.",
 	"author": "Tacai",
 	"isDesktopOnly": false
